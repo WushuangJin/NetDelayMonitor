@@ -1,8 +1,6 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <errno.h> 
-#include <string.h>
-#include <string>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h> 
@@ -11,7 +9,7 @@
 #include <arpa/inet.h> 
 #include "client.h"
 
-#define SERVER_PORT 8000
+#define SERVER_PORT 24730
 #define MAXDATASIZE 100  
 #define SERVER_IP "127.0.0.1" 
 
