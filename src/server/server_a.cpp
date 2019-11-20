@@ -27,7 +27,6 @@ socklen_t servera_len, client_len;
 
 char city_id;
 int start_idx;
-int end_to_end_dis, speed_prop, speed_trans;
 char map_info[BUFFER_SIZE];
 char start_point_info[BUFFER_SIZE];
 
@@ -39,7 +38,9 @@ public:
     int prop_speed;
     // Transmission speed: Bytes/s
     int tran_speed;
-    //
+    // Num_edge
+    int num_edge;
+
     unordered_map<int,vector< pair<int, int> > > graph;
     City(){
     }
@@ -55,17 +56,16 @@ int process_file(string filePath, unordered_map <char, City> &map){
         string tempStr;
         char name;
         // the index of cities processed
-
         while(getline(file,tempStr))
         {
             if(tempStr.empty())
                 continue;
              if(isalpha(tempStr[0])) {
                  name = tempStr[0];
-                 printf("find city %c \n",name);
                  //reading the speed information
                  map[name] = City();
                  map[name].map_id = name;
+                 map[name].num_edge = 0;
                  getline(file,tempStr);
                  map[name].prop_speed = stoi(tempStr);
                  getline(file,tempStr);
@@ -81,13 +81,27 @@ int process_file(string filePath, unordered_map <char, City> &map){
                  int start = stoi(temp[0]);
                  int end = stoi(temp[1]);
                  int dis = stoi(temp[2]);
-                 printf("edge from %d to %d\n", start, end);
-                 printf("edge from %d to %d\n", end, start);
+                //  printf("edge from %d to %d\n", start, end);
+                //  printf("edge from %d to %d\n", end, start);
                  map[name].graph[start].push_back(make_pair(end, dis));
                  map[name].graph[end].push_back(make_pair(start, dis));
+                 map[name].num_edge = map[name].num_edge + 1;
+                 
              }
         }
     }
+
+    printf("The Server A has constructed a list of maps: \n");
+    printf("--------------------------------------------- \n");
+    printf("Map ID\tNum Verices\tNum Edges\n");
+    for(unordered_map<char,City>::iterator iter=map.begin();iter!=map.end();iter++) {
+        char Map_ID = iter->first;
+        City city = iter->second;
+        int num_edges = city.num_edge;
+        int num_vertices = city.graph.size();
+        printf("%c\t%d\t%d\n", Map_ID, num_vertices, num_edges);
+    }
+
     return 0;
 }
 
@@ -98,11 +112,11 @@ struct Compare {
 };
 typedef pair<int, int> edge;
 
-int compute(int start, City city) {
+vector<pair<int,int> > compute(int start, City city) {
     unordered_map<int,vector<pair<int, int> > > graph = city.graph;
     int N = graph.size();
-    printf("there are %d node in this city ", N);
     vector <bool> visited(N+1,false);
+    vector <pair<int, int> > routes;
     priority_queue< pair<int, int>, vector<pair<int,int> >, Compare> pq;
     pq.push(make_pair(start, 0));
     int res = 0;
@@ -114,11 +128,14 @@ int compute(int start, City city) {
         int dis = curr.second;
         if (visited[node]) 
             continue;
+        if (dis > 0) {
+            routes.push_back(make_pair(node, dis));
+        }
         visited[node] = true;
         res = max(res, dis);
         ++cnt_visited;
         if (cnt_visited == N) {
-            return res;
+            break;
         }
         for( auto& next : graph[node]) {
             int next_node = next.first;
@@ -126,8 +143,15 @@ int compute(int start, City city) {
             pq.push(make_pair(next_node, next_dis));
         } 
     }
-    printf("map_info error !");
-    return -1;
+
+    printf("The Server A has identified the following shortest paths: \n");
+    printf("------------------------------------- \n");
+    printf("Destination \t Min Length\n");
+    printf("------------------------------------- \n");
+    for(pair<int,int> step : routes) {
+        printf("%d\t%d\n", step.first, step.second);
+    }
+    return routes;
 }
 
 int start_up_socket(unordered_map <char, City> &map) {
@@ -166,26 +190,24 @@ int start_up_socket(unordered_map <char, City> &map) {
             recv(aws_udp_sock, start_point_info, BUFFER_SIZE, 0);
             city_id = map_info[0];
             start_idx = start_point_info[0] - '0';
-            end_to_end_dis= compute(start_idx, map[city_id]);
-            speed_prop = map[city_id].prop_speed;
-            speed_trans = map[city_id].tran_speed;
+            vector<pair<int, int> > routes =  compute(start_idx, map[city_id]);
+            char dest[BUFFER_SIZE];
+            char dis_in_node[BUFFER_SIZE];
+            char speed_arr[BUFFER_SIZE];
 
-            printf("end_to_end_dis : %d \n" , end_to_end_dis);
-            printf("prop_speed : %d \n", speed_prop);
-            printf("tran_speed : %d \n", speed_trans);
+            speed_arr[0] = map[city_id].prop_speed + '0';
+            speed_arr[1] = map[city_id].tran_speed + '0';
 
-            printf("--------Send dijstra result back to the aws server --------");
-            char serverA_to_aws_buf1[BUFFER_SIZE];
-            char serverA_to_aws_buf2[BUFFER_SIZE];
-            char serverA_to_aws_buf3[BUFFER_SIZE];
-            serverA_to_aws_buf1[0] = end_to_end_dis + '0';
-            serverA_to_aws_buf2[0] = speed_prop + '0';
-            serverA_to_aws_buf3[0] = speed_prop + '0';
-            send(aws_udp_sock, serverA_to_aws_buf1, BUFFER_SIZE, 0);
-            send(aws_udp_sock, serverA_to_aws_buf2, BUFFER_SIZE, 0);
-            send(aws_udp_sock, serverA_to_aws_buf3, BUFFER_SIZE, 0);
-            printf("--------Success send the result------------");
-
+            int idx = 0;
+            for(pair<int, int> route : routes) {
+                dest[idx] = route.first + '0';
+                dis_in_node[idx] = route.second + '0';
+                idx++;
+            }
+            send(aws_udp_sock, dest, BUFFER_SIZE, 0);
+            send(aws_udp_sock, dis_in_node, BUFFER_SIZE, 0);
+            send(aws_udp_sock, speed_arr, BUFFER_SIZE, 0);
+            printf("The Server A has sent shortest paths to AWS. \n");
         }
     } 
 
@@ -196,10 +218,11 @@ int main() {
     string filePath = "map.txt";
     unordered_map <char, City> map;
     process_file(filePath, map);
-    printf("the size of map : %lu \n", map.size());
-    // receive map info from aws
-    start_up_socket(map);
+    int start_idx =  1;
+    char city_id = 'A';
+    compute(start_idx, map[city_id]);
 
-    
+    // receive map info from aws
+    // start_up_socket(map);
     return 0;
 }
