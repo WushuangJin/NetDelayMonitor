@@ -76,6 +76,6 @@ int main(int argc, char* argv[]) {
             break;
         } 
     }  
-        close(sockfd); 
-        return 0;
+    close(sockfd); 
+    return 0;
 }

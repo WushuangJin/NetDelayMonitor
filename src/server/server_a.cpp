@@ -21,14 +21,6 @@
 #define BUFFER_SIZE 100
 using namespace std;
 
-int aws_udp_sock, servera_udp_sock;
-struct sockaddr_in client_addr, servera_addr;
-socklen_t servera_len, client_len;
-
-char city_id;
-int start_idx;
-char map_info[BUFFER_SIZE];
-char start_point_info[BUFFER_SIZE];
 
 class City{
 public:
@@ -154,6 +146,16 @@ vector<pair<int,int> > compute(int start, City city) {
     return routes;
 }
 
+
+int aws_udp_sock, servera_udp_sock;
+struct sockaddr_in client_addr, servera_addr;
+socklen_t servera_len, client_len;
+
+char city_id;
+int start_idx;
+char msg[BUFFER_SIZE];
+
+
 int start_up_socket(unordered_map <char, City> &map) {
     // create udp socket
     servera_udp_sock = socket(AF_INET,SOCK_DGRAM,0);
@@ -161,68 +163,55 @@ int start_up_socket(unordered_map <char, City> &map) {
     servera_addr.sin_port = htons(PORT);
     servera_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     servera_len = sizeof(servera_addr);
-    //create a socket
-    int on;
-    setsockopt(servera_udp_sock, SOL_SOCKET, SO_REUSEADDR,&on,sizeof(on));
-    if(bind(servera_udp_sock, (struct sockaddr*)&servera_addr, servera_len) == -1){
-        printf("server A bind error");
-        exit(1);
-    }
-    if(listen(servera_udp_sock, 5) == -1){
-        printf("server A listen error");
-        exit(1);
-    }
-
     client_len = sizeof(client_addr);
 
-    while(1) {
+    //create a socket
+    if(bind(servera_udp_sock, (struct sockaddr*)&servera_addr, servera_len) == -1){
+        printf("server A bind error \n");
+        exit(1);
+    }
 
-        if((aws_udp_sock = accept(servera_udp_sock, (struct sockaddr*)&client_addr, &client_len)) == -1){
+    while(1) {
+        int count;
+        memset(msg, 0, BUFFER_SIZE);
+        count = recvfrom(servera_udp_sock, msg, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, &client_len);
+        if(count == -1) {
             printf("server A connect error");
             exit(1);
-        } else {
-            printf("server A create connection successfully\n");
-            int error = send(aws_udp_sock, "You have conected to the server A", strlen("You have conected to the server A"), 0);
-            memset(map_info, 0, BUFFER_SIZE);
-            memset(start_point_info, 0, BUFFER_SIZE);
-            
-            recv(aws_udp_sock, map_info, BUFFER_SIZE, 0);
-            recv(aws_udp_sock, start_point_info, BUFFER_SIZE, 0);
-            city_id = map_info[0];
-            start_idx = start_point_info[0] - '0';
-            vector<pair<int, int> > routes =  compute(start_idx, map[city_id]);
-            char dest[BUFFER_SIZE];
-            char dis_in_node[BUFFER_SIZE];
-            char speed_arr[BUFFER_SIZE];
-
-            speed_arr[0] = map[city_id].prop_speed + '0';
-            speed_arr[1] = map[city_id].tran_speed + '0';
-
-            int idx = 0;
-            for(pair<int, int> route : routes) {
-                dest[idx] = route.first + '0';
-                dis_in_node[idx] = route.second + '0';
-                idx++;
-            }
-            send(aws_udp_sock, dest, BUFFER_SIZE, 0);
-            send(aws_udp_sock, dis_in_node, BUFFER_SIZE, 0);
-            send(aws_udp_sock, speed_arr, BUFFER_SIZE, 0);
-            printf("The Server A has sent shortest paths to AWS. \n");
         }
-    } 
+        printf("server A create connection successfully\n");
+        city_id = msg[0];
+        start_idx = msg[1] - '0';
+        printf("The Server A has received input for finding shortest paths: starting vertex <%d> of map <%c> \n", start_idx, city_id);
+        vector<pair<int, int> > routes =  compute(start_idx, map[city_id]);
+        char dest[BUFFER_SIZE];
+        char dis_in_node[BUFFER_SIZE];
+        char speed_arr[BUFFER_SIZE];
 
-    
+        int idx = 0;
+        for(pair<int, int> route : routes) {
+            dest[idx] = route.first + '0';
+            dis_in_node[idx] = route.second + '0';
+            idx++;
+        }
+
+        speed_arr[0] = map[city_id].prop_speed + '0';
+        speed_arr[1] = map[city_id].tran_speed + '0';
+        speed_arr[2] = idx + '0';
+
+        sendto(servera_udp_sock, dest, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
+        sendto(servera_udp_sock, dis_in_node, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
+        sendto(servera_udp_sock, speed_arr, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
+        printf("The Server A has sent shortest paths to AWS. \n");
+
+    } 
+    return 0;
 }
 
 int main() {
     string filePath = "map.txt";
     unordered_map <char, City> map;
     process_file(filePath, map);
-    int start_idx =  1;
-    char city_id = 'A';
-    compute(start_idx, map[city_id]);
-
-    // receive map info from aws
-    // start_up_socket(map);
+    start_up_socket(map);
     return 0;
 }
