@@ -16,9 +16,11 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include "server_a.h"
 
 #define PORT 21730
 #define BUFFER_SIZE 100
+
 using namespace std;
 
 
@@ -93,6 +95,7 @@ int process_file(string filePath, unordered_map <char, City> &map){
         int num_vertices = city.graph.size();
         printf("%c\t%d\t%d\n", Map_ID, num_vertices, num_edges);
     }
+    printf("--------------------------------------------- \n");
 
     return 0;
 }
@@ -150,6 +153,7 @@ vector<pair<int,int> > compute(int start, City city) {
 int aws_udp_sock, servera_udp_sock;
 struct sockaddr_in client_addr, servera_addr;
 socklen_t servera_len, client_len;
+struct speed_info speed_info_send;
 
 char city_id;
 int start_idx;
@@ -174,12 +178,12 @@ int start_up_socket(unordered_map <char, City> &map) {
     while(1) {
         int count;
         memset(msg, 0, BUFFER_SIZE);
+
         count = recvfrom(servera_udp_sock, msg, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, &client_len);
         if(count == -1) {
             printf("server A connect error");
             exit(1);
         }
-        printf("server A create connection successfully\n");
         city_id = msg[0];
         start_idx = msg[1] - '0';
         printf("The Server A has received input for finding shortest paths: starting vertex <%d> of map <%c> \n", start_idx, city_id);
@@ -188,6 +192,10 @@ int start_up_socket(unordered_map <char, City> &map) {
         char dis_in_node[BUFFER_SIZE];
         char speed_arr[BUFFER_SIZE];
 
+        memset(dest, 0, sizeof(dest));
+        memset(dis_in_node, 0, sizeof(dis_in_node));
+        memset(speed_arr, 0 , sizeof(speed_arr));
+
         int idx = 0;
         for(pair<int, int> route : routes) {
             dest[idx] = route.first + '0';
@@ -195,13 +203,20 @@ int start_up_socket(unordered_map <char, City> &map) {
             idx++;
         }
 
-        speed_arr[0] = map[city_id].prop_speed + '0';
-        speed_arr[1] = map[city_id].tran_speed + '0';
-        speed_arr[2] = idx + '0';
+        printf("prop_speed : %d \n", map[city_id].prop_speed);
+        printf("tran_speed : %d \n", map[city_id].tran_speed);
 
+        speed_info_send.prop_speed = map[city_id].prop_speed ;
+        speed_info_send.tran_speed = map[city_id].tran_speed ;
+        speed_info_send.num_vertix = idx;
+
+        // store the speed info int a define struct
+        memcpy(speed_arr, &speed_info_send ,sizeof(speed_info)); 
+        // send corresponding file
+        
         sendto(servera_udp_sock, dest, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
         sendto(servera_udp_sock, dis_in_node, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
-        sendto(servera_udp_sock, speed_arr, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
+        sendto(servera_udp_sock, speed_arr, sizeof(speed_info), 0, (struct sockaddr*)&client_addr, client_len);
         printf("The Server A has sent shortest paths to AWS. \n");
 
     } 
@@ -211,6 +226,7 @@ int start_up_socket(unordered_map <char, City> &map) {
 int main() {
     string filePath = "map.txt";
     unordered_map <char, City> map;
+    printf("The Server A is up and running using UDP on port <%d>.", PORT);
     process_file(filePath, map);
     start_up_socket(map);
     return 0;

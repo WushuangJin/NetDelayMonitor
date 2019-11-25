@@ -10,7 +10,7 @@
 #include "client.h"
 
 #define SERVER_PORT 24730
-#define MAXDATASIZE 100  
+#define MAXDATASIZE 100 
 #define SERVER_IP "127.0.0.1" 
 
 
@@ -24,14 +24,12 @@ int main(int argc, char* argv[]) {
     sscanf(size, "%d", &file_size); 
 
     struct trans_info send_file;
+    struct recv_tcp_info recv_file;
     send_file.map_idx[0] = city;
     send_file.size = file_size;
     send_file.start_idx = start_idx;
 
-    printf("%d\n", send_file.size);
-    printf("%d\n", send_file.start_idx);
-    printf("%c\n", send_file.map_idx[0]);
-
+  
     int sockfd, numbytes; 
     char buf[MAXDATASIZE]; 
     struct sockaddr_in server_addr; 
@@ -59,18 +57,34 @@ int main(int argc, char* argv[]) {
             perror("recv"); 
             exit(1);
         } else if (numbytes > 0) { 
-            int len, bytes_sent;
-            buf[numbytes] = '\0'; 
-            printf("Received: %s\n",buf);
             char temp[100];
+            char msg[10000];
+            memset(buf, 0, sizeof(buf));
             memset(temp,0,sizeof(temp));
             memcpy(temp, &send_file, sizeof(trans_info));
-            len = sizeof(trans_info); 
-            printf("success send the map_file");
+            int len = sizeof(trans_info); 
+            printf("The client is up and running.\n");
+            printf("The client has sent query to AWS using TCP over port <%d>: start vertex <%d>; map <%c>; file size <%d>.\n", SERVER_PORT, start_idx, city, file_size);
             //sent to the server
             if(send(sockfd, temp, len, 0) == -1){ 
                 perror("send error"); 
             }
+            recv(sockfd, msg, 10000, 0);
+            memcpy(&recv_file, msg, sizeof(recv_tcp_info));
+            printf("The client has received results from AWS: \n");
+            printf("----------------------------------------------\n");
+            printf("Destination \t Min \t Length \t Tt \t Tp \t Delay \n");
+            printf("----------------------------------------------\n");
+
+            for(int i = 0; i < recv_file.num; i++) {
+                int dest = recv_file.dest[i];
+                int dis = recv_file.dis[i];
+                double tt = recv_file.tt[i];
+                double tp = recv_file.tp[i];
+                double delay = recv_file.delay[i];
+                printf("%d\t%d\t%.2f\t%.2f\t%.2f\n", dest, dis, tt, tp, delay);
+            }
+            break;
         } else { 
             printf("soket end!\n"); 
             break;

@@ -11,21 +11,23 @@
 #include <math.h>
 
 using namespace std;
-struct trans_info{
 
-	char map_idx[1];
+struct delay_info{
+    
+    int file_size;
 
-	int start_idx;
+	int tran_speed;
 
-	int size;
+	int prop_speed;
+
+	int num_vertix;
 
 };
 
-struct recv_tcp_info {
-	int num;
-	int dest[20];
-	int dis[20];
-	double tp[20];
-	double delay[20];
-	double tt[20];
+struct result_from_serverB {
+
+	double tt;
+
+	double tp[100];
+
 };
