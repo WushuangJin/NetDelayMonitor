@@ -17,6 +17,7 @@
 #define TCP_PORT 24730
 #define UDPA_PORT 21730
 #define UDPB_PORT 22730
+#define UDP_PORT 23730
 #define SERVER_IP "127.0.0.1" 
 #define MAXDATASIZE 100
 
@@ -61,7 +62,7 @@ int boot_up_udp_a() {
     servera_len = sizeof(servera_udp_addr);
     clienta_len = sizeof(aws_clienta_addr);
 
-    printf("The AWS has sent map ID and starting vertex to server A server A using UDP over port <%d>”\n", UDPA_PORT);
+    printf("The AWS has sent map ID and starting vertex to server A server A using UDP over port <%d>”\n", UDP_PORT);
     //sent to the server
     if(sendto(servera_udp_sockfd, buff, MAXDATASIZE, 0,  (struct sockaddr*)&servera_udp_addr, servera_len) == -1){ 
         perror("aws server send query to server A error"); 
@@ -86,9 +87,9 @@ int boot_up_udp_a() {
 
 
     printf("The AWS has received shortest path from server A:\n");
-    printf("-----------------------------\n");
+    printf("-------------------------------------------\n");
     printf("Destination\tMin Length\n");
-    printf("-----------------------------\n");
+    printf("-------------------------------------------\n");
 
     for(int i = 0; i < num_vertix; i++) {
         int node = dest[i] - '0';
@@ -143,7 +144,6 @@ int boot_up_udp_b() {
 
     for(int i = 0; i < num_vertix; i++) {
         pair<int, int> edge = distance_res[i];
-        printf("%d \t %d", dest[i], dis_in_node[i]);
     }
     
     memcpy(buff, &delay_info_send ,sizeof(delay_info)); 
@@ -153,15 +153,15 @@ int boot_up_udp_b() {
     }
     sendto(serverb_udp_sockfd, dest, MAXDATASIZE, 0,  (struct sockaddr*)&serverb_udp_addr, serverb_len);
     sendto(serverb_udp_sockfd, dis_in_node, MAXDATASIZE, 0,  (struct sockaddr*)&serverb_udp_addr, serverb_len);
-    printf("The AWS has sent path length, propagation speed and transmission speed to server B using UDP over port <%d> \n", UDPB_PORT);
+    printf("The AWS has sent path length, propagation speed and transmission speed to server B using UDP over port <%d> \n", UDP_PORT);
 
     recvfrom(serverb_udp_sockfd, delay_res, MAXDATASIZE, 0, (struct sockaddr*)&aws_clientb_addr, &clientb_len);
     memcpy(&delay_info_recv, delay_res, sizeof(result_from_serverB));
 
     printf("The AWS has received delays from server B:\n");
-    printf("--------------------------------------------\n");
+    printf("--------------------------------------------------\n");
     printf("Destination \t Tt \t Tp \t Delay \n");
-    printf("--------------------------------------------\n");
+    printf("--------------------------------------------------\n");
 
     tt_res = delay_info_recv.tt;
     send_file.num = num_vertix;
@@ -225,7 +225,7 @@ int main() {
             boot_up_udp_b(); 
             memcpy(send_client_msg, &send_file, sizeof(recv_tcp_info));   
             send(client_tcp_sockfd, send_client_msg, 10000, 0);
-            printf("The AWS has sent calculated delay to client using client TCP over port <%d>.",TCP_PORT);
+            printf("The AWS has sent calculated delay to client using client TCP over port <%d>.\n",TCP_PORT);
         }
     }
     close(server_tcp_sockfd); 

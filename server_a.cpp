@@ -202,10 +202,6 @@ int start_up_socket(unordered_map <char, City> &map) {
             dis_in_node[idx] = route.second + '0';
             idx++;
         }
-
-        printf("prop_speed : %d \n", map[city_id].prop_speed);
-        printf("tran_speed : %d \n", map[city_id].tran_speed);
-
         speed_info_send.prop_speed = map[city_id].prop_speed ;
         speed_info_send.tran_speed = map[city_id].tran_speed ;
         speed_info_send.num_vertix = idx;
@@ -226,7 +222,7 @@ int start_up_socket(unordered_map <char, City> &map) {
 int main() {
     string filePath = "map.txt";
     unordered_map <char, City> map;
-    printf("The Server A is up and running using UDP on port <%d>.", PORT);
+    printf("The Server A is up and running using UDP on port <%d>.\n", PORT);
     process_file(filePath, map);
     start_up_socket(map);
     return 0;

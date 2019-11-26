@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
             memcpy(temp, &send_file, sizeof(trans_info));
             int len = sizeof(trans_info); 
             printf("The client is up and running.\n");
-            printf("The client has sent query to AWS using TCP over port <%d>: start vertex <%d>; map <%c>; file size <%d>.\n", SERVER_PORT, start_idx, city, file_size);
+            printf("The client has sent query to AWS using TCP : start vertex <%d>; map <%c>; file size <%d>.\n", start_idx, city, file_size);
             //sent to the server
             if(send(sockfd, temp, len, 0) == -1){ 
                 perror("send error"); 
