@@ -9,9 +9,9 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 #include <vector>
-#include "../client/client.h"
-#include "../server/server_a.h"
-#include "../server/server_b.h"
+#include "client.h"
+#include "server_a.h"
+#include "server_b.h"
 
 
 #define TCP_PORT 24730
@@ -174,7 +174,7 @@ int boot_up_udp_b() {
         send_file.tp[i] = tp_res[i];
         send_file.tt[i] = tt_res; 
         send_file.delay[i] = delay_res[i];
-        printf("%c \t %.2f \t %.2f \t %.2f \n", dest[i], tt_res, tp_res[i], delay_res[i]);
+        printf("%d \t %.2f \t %.2f \t %.2f \n", send_file.dest[i], tt_res, tp_res[i], delay_res[i]);
     } 
     return 0;
 }
