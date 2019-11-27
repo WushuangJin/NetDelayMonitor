@@ -1,15 +1,15 @@
 all: serverA.cpp serverB.cpp client.cpp aws.cpp
-	  g++ -o serverA serverA.cpp
-	  g++ -o serverB serverB.cpp
-	  g++ -o client client.cpp
-	  g++ -o aws aws.cpp
+	  g++ -std=c++11 -o serverA.o serverA.cpp
+	  g++ -std=c++11 -o serverB.o serverB.cpp
+	  g++ -std=c++11 -o client.o client.cpp
+	  g++ -std=c++11 -o aws.o aws.cpp
 
-serverA: serverA.cpp
+serverA: serverA.o
 			./serverA
 
-serverB: serverB.cpp
+serverB: serverB.o
 			./serverB
 
-aws: aws.cpp
+aws: aws.o
 			./aws
 
