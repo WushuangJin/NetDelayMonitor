@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <unordered_map>
-#include "server_b.h"
+#include "serverB.h"
 
 #define PORT 22730
 #define BUFFER_SIZE 100
@@ -95,7 +95,6 @@ int start_up_socket() {
         num_vertices = delay_info_recv.num_vertix;
         
         printf("The Server B has received data for calculation:\n");
-        printf("The file_size is %d\n", file_size);
         printf("* Propagation speed: <%d> km/s;\n", prop_speed);
         printf("* Transmission speed <%d> Bytes/s;\n", trans_speed);
 

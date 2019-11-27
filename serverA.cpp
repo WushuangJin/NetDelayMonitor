@@ -16,7 +16,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
-#include "server_a.h"
+#include "serverA.h"
 
 #define PORT 21730
 #define BUFFER_SIZE 100
@@ -85,7 +85,7 @@ int process_file(string filePath, unordered_map <char, City> &map){
         }
     }
 
-    printf("The Server A has constructed a list of maps: \n");
+    printf("The Server A has constructed a list of <%lu> maps: \n", map.size());
     printf("--------------------------------------------- \n");
     printf("Map ID\tNum Verices\tNum Edges\n");
     for(unordered_map<char,City>::iterator iter=map.begin();iter!=map.end();iter++) {

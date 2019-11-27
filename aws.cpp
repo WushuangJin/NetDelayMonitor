@@ -10,8 +10,8 @@
 #include <sys/shm.h>
 #include <vector>
 #include "client.h"
-#include "server_a.h"
-#include "server_b.h"
+#include "serverA.h"
+#include "serverB.h"
 
 
 #define TCP_PORT 24730
