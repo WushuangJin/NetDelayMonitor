@@ -226,6 +226,7 @@ int main() {
             memcpy(send_client_msg, &send_file, sizeof(recv_tcp_info));   
             send(client_tcp_sockfd, send_client_msg, 10000, 0);
             printf("The AWS has sent calculated delay to client using client TCP over port <%d>.\n",TCP_PORT);
+            printf("--------------------------------------------------\n");
         }
     }
     close(server_tcp_sockfd); 
