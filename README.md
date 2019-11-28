@@ -24,5 +24,4 @@ other nodes.
 
 Receive the distiance to all other node and compute transmission delay, propogation delay, end to end delay.
 
-
-
+note : Transmission delay, end to end delay is in ms
