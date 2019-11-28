@@ -14,11 +14,11 @@ using namespace std;
 
 struct delay_info{
     
-    int file_size;
+    long file_size;
 
-	int tran_speed;
+	double tran_speed;
 
-	int prop_speed;
+	double prop_speed;
 
 	int num_vertix;
 

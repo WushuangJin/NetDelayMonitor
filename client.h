@@ -17,7 +17,7 @@ struct trans_info{
 
 	int start_idx;
 
-	int size;
+	long size;
 
 };
 

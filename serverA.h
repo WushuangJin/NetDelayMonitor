@@ -14,9 +14,9 @@ using namespace std;
 
 struct speed_info{
 
-	int tran_speed;
+	double tran_speed;
 
-	int prop_speed;
+	double prop_speed;
 
 	int num_vertix;
 

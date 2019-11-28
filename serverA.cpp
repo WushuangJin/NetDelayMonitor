@@ -29,9 +29,9 @@ public:
     // city name
     char map_id;
     // Propagation speed: km/s
-    int prop_speed;
+    double prop_speed;
     // Transmission speed: Bytes/s
-    int tran_speed;
+    double tran_speed;
     // Num_edge
     int num_edge;
 
@@ -61,9 +61,9 @@ int process_file(string filePath, unordered_map <char, City> &map){
                  map[name].map_id = name;
                  map[name].num_edge = 0;
                  getline(file,tempStr);
-                 map[name].prop_speed = stoi(tempStr);
+                 map[name].prop_speed = stod(tempStr);
                  getline(file,tempStr);
-                 map[name].tran_speed = stoi(tempStr);
+                 map[name].tran_speed = stod(tempStr);
 
              } else{
                  istringstream in(tempStr);

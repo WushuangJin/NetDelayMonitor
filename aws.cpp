@@ -32,7 +32,8 @@ struct recv_tcp_info send_file;
 
 //define socket for udp connection with server A and server B
 
-int servera_udp_sockfd, tran_speed, prop_speed, num_vertix;
+int servera_udp_sockfd, num_vertix;
+double tran_speed, prop_speed;
 struct sockaddr_in servera_udp_addr, aws_clienta_addr; 
 vector<std::pair<int, int> > distance_res;
 socklen_t servera_len, clienta_len;
@@ -136,7 +137,7 @@ int boot_up_udp_b() {
     bzero(buff,MAXDATASIZE);
     printf("\nBegin connection to server B...\n");
 
-    int file_size = receive_file.size;
+    long file_size = receive_file.size;
     delay_info_send.file_size = file_size;
     delay_info_send.prop_speed = prop_speed;
     delay_info_send.tran_speed = tran_speed;
@@ -174,7 +175,7 @@ int boot_up_udp_b() {
         send_file.tp[i] = tp_res[i];
         send_file.tt[i] = tt_res; 
         send_file.delay[i] = delay_res[i];
-        printf("%d \t %.2f \t %.2f \t %.2f \n", send_file.dest[i], tt_res, tp_res[i], delay_res[i]);
+        printf("%d \t %.2f \t %.2f \t %.2f \n", send_file.dest[i], tt_res / 1000, tp_res[i] / 1000, delay_res[i] / 1000);
     } 
     return 0;
 }
@@ -217,10 +218,7 @@ int main() {
             int error = send(client_tcp_sockfd, "You have conected the server", strlen("You have conected the server"), 0);
             recv(client_tcp_sockfd, temp, 100, 0);
             memcpy(&receive_file, temp, sizeof(trans_info));
-            // printf("%d\n", receive_file.size);
-            // printf("%d\n", receive_file.start_idx);
-            // printf("%c\n", receive_file.map_idx[0]);  
-            printf("The AWS has received map ID <%c>, startex <%d> and file size <%d> from the client using TCP over port <%d>\n",receive_file.map_idx[0], receive_file.start_idx, receive_file.size, TCP_PORT);
+            printf("The AWS has received map ID <%c>, startex <%d> and file size <%ld> from the client using TCP over port <%d>\n",receive_file.map_idx[0], receive_file.start_idx, receive_file.size, TCP_PORT);
             boot_up_udp_a();
             boot_up_udp_b(); 
             memcpy(send_client_msg, &send_file, sizeof(recv_tcp_info));   

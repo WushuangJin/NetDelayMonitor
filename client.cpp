@@ -20,10 +20,10 @@ int main(int argc, char* argv[]) {
     char* from = argv[2];
     char* size = argv[3];
     int start_idx; 
-    int file_size;
+    long file_size;
     sscanf(from, "%d", &start_idx); 
-    sscanf(size, "%d", &file_size); 
-
+    sscanf(size, "%ld", &file_size); 
+    
     struct trans_info send_file;
     struct recv_tcp_info recv_file;
     send_file.map_idx[0] = city;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
             memcpy(temp, &send_file, sizeof(trans_info));
             int len = sizeof(trans_info); 
             printf("The client is up and running.\n");
-            printf("The client has sent query to AWS using TCP : start vertex <%d>; map <%c>; file size <%d>.\n", start_idx, city, file_size);
+            printf("The client has sent query to AWS using TCP : start vertex <%d>; map <%c>; file size <%ld>.\n", start_idx, city, file_size);
             //sent to the server
             if(send(sockfd, temp, len, 0) == -1){ 
                 perror("send error"); 
@@ -80,9 +80,9 @@ int main(int argc, char* argv[]) {
             for(int i = 0; i < recv_file.num; i++) {
                 int dest = recv_file.dest[i];
                 int dis = recv_file.dis[i];
-                double tt = recv_file.tt[i];
-                double tp = recv_file.tp[i];
-                double delay = recv_file.delay[i];
+                double tt = recv_file.tt[i]/1000;
+                double tp = recv_file.tp[i]/1000;
+                double delay = recv_file.delay[i]/1000;
                 printf("%d\t%d\t%.2f\t%.2f\t%.2f\n", dest, dis, tt, tp, delay);
             }
             break;

@@ -31,7 +31,7 @@ struct delay_info delay_info_recv;
 struct result_from_serverB result_to_aws;
 
 
-int compute(vector<pair<int, int> > &edges, double Tt, int prop_speed, unordered_map<int, pair<double, double> > &res_map) {
+int compute(vector<pair<int, int> > &edges, double Tt, double prop_speed, unordered_map<int, pair<double, double> > &res_map) {
     for(pair< int, int > edge : edges) {
         int dest = edge.first;
         int dis = edge.second;
@@ -64,9 +64,9 @@ int start_up_socket() {
     char delay_res[BUFFER_SIZE];
     
     while(1) {
-        int count;
-        int num_vertices, file_size;
-        int prop_speed, trans_speed;
+        int count, num_vertices;
+        long file_size;
+        double prop_speed, trans_speed;
         double Tt;
         
         memset(msg, 0, BUFFER_SIZE);
@@ -95,8 +95,8 @@ int start_up_socket() {
         num_vertices = delay_info_recv.num_vertix;
         
         printf("The Server B has received data for calculation:\n");
-        printf("* Propagation speed: <%d> km/s;\n", prop_speed);
-        printf("* Transmission speed <%d> Bytes/s;\n", trans_speed);
+        printf("* Propagation speed: <%.2f> km/s;\n", prop_speed);
+        printf("* Transmission speed <%.2f> Bytes/s;\n", trans_speed);
 
         for(int i = 0; i < num_vertices; i++) {
             int node = dest[i] - '0';
@@ -107,7 +107,7 @@ int start_up_socket() {
         printf("------------------------\n");
 
         // compute Tt 
-        Tt = 1000 * (double(file_size) / ((8.0) * (double) trans_speed));
+        Tt = (double(file_size) / ((8.0) * trans_speed)) * 1000;
         // compute the prop_delay to each node and store the result into res_map
         // the key of res_map is each node and value is pair of (Tp, Delay);
         compute(edges, Tt, prop_speed, res_map);
@@ -122,7 +122,7 @@ int start_up_socket() {
             int node = dest[i] - '0';
             pair<double, double> t_pair = res_map[node];
             double tp = t_pair.first;
-            double delay = t_pair.second;
+            double delay = t_pair.second / 1000;
             result_to_aws.tp[i] = tp;
             printf("%d \t %.2f \n", node, delay);
         }
