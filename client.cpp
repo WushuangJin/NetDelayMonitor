@@ -15,6 +15,9 @@
 #define SERVER_IP "127.0.0.1" 
 
 
+// Method of creating linux socket using cpp is 
+// referenced from https://blog.csdn.net/u012234115/article/details/54142273
+
 int main(int argc, char* argv[]) { 
     char city = *argv[1];
     char* from = argv[2];
@@ -37,7 +40,7 @@ int main(int argc, char* argv[]) {
 
     printf("\n======================client initialization======================\n"); 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) { 
-        perror("socket"); 
+        perror("client socket create error"); 
         exit(1); 
     }
 
@@ -80,9 +83,9 @@ int main(int argc, char* argv[]) {
             for(int i = 0; i < recv_file.num; i++) {
                 int dest = recv_file.dest[i];
                 int dis = recv_file.dis[i];
-                double tt = recv_file.tt[i]/1000;
-                double tp = recv_file.tp[i]/1000;
-                double delay = recv_file.delay[i]/1000;
+                double tt = recv_file.tt[i];
+                double tp = recv_file.tp[i];
+                double delay = recv_file.delay[i];
                 printf("%d\t%d\t%.2f\t%.2f\t%.2f\n", dest, dis, tt, tp, delay);
             }
             break;

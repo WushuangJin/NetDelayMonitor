@@ -214,6 +214,7 @@ int start_up_socket(unordered_map <char, City> &map) {
         sendto(servera_udp_sock, dis_in_node, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
         sendto(servera_udp_sock, speed_arr, sizeof(speed_info), 0, (struct sockaddr*)&client_addr, client_len);
         printf("The Server A has sent shortest paths to AWS. \n");
+        printf("------------------------------------- \n");
 
     } 
     return 0;

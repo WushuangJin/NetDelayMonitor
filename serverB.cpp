@@ -122,13 +122,14 @@ int start_up_socket() {
             int node = dest[i] - '0';
             pair<double, double> t_pair = res_map[node];
             double tp = t_pair.first;
-            double delay = t_pair.second / 1000;
+            double delay = t_pair.second;
             result_to_aws.tp[i] = tp;
             printf("%d \t %.2f \n", node, delay);
         }
         memcpy(delay_res, &result_to_aws ,sizeof(result_from_serverB));
         sendto(serverb_udp_sock, delay_res, BUFFER_SIZE, 0, (struct sockaddr*)&client_addr, client_len);
         printf("The Server B has finished sending the output to AWS \n");
+        printf("-----------------------------------\n");
     } 
 }
 

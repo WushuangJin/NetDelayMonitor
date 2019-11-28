@@ -14,6 +14,8 @@
 #include "serverB.h"
 
 
+//define the port number
+
 #define TCP_PORT 24730
 #define UDPA_PORT 21730
 #define UDPB_PORT 22730
@@ -30,7 +32,7 @@ struct trans_info receive_file;
 struct recv_tcp_info send_file;
 // receive_file is file that client send to the aws server through tcp socket
 
-//define socket for udp connection with server A and server B
+//define socket for udp connection with server A
 
 int servera_udp_sockfd, num_vertix;
 double tran_speed, prop_speed;
@@ -100,7 +102,7 @@ int boot_up_udp_a() {
     }
     return 0;
 }
-
+//define socket for udp connection with server B
 
 int serverb_udp_sockfd;
 struct sockaddr_in serverb_udp_addr, aws_clientb_addr; 
@@ -175,7 +177,7 @@ int boot_up_udp_b() {
         send_file.tp[i] = tp_res[i];
         send_file.tt[i] = tt_res; 
         send_file.delay[i] = delay_res[i];
-        printf("%d \t %.2f \t %.2f \t %.2f \n", send_file.dest[i], tt_res / 1000, tp_res[i] / 1000, delay_res[i] / 1000);
+        printf("%d \t %.2f \t %.2f \t %.2f \n", send_file.dest[i], tt_res, tp_res[i], delay_res[i]);
     } 
     return 0;
 }
